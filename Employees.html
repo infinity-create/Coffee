@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EmployeesHello</title>
+
+    <style>
+
+        body {display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        #orderTable td{ text-align: center;}
+
+    </style>
+</head>
+
+
+
+
+
+<body>
+    <script type="text/javascript">
+
+    function orders (){
+        var http = new XMLHttpRequest();
+
+        http.onreadystatechange = function (){
+            if(http.readyState == 4 && http.status == 200){
+                var obj = JSON.parse(this.response);
+                    var table = "<table id='orderTable'> <tr><th>Time</th><th>Order Number</th><th>Order Note</th><th>Change Status</th></tr>";
+                        for (x in obj) {
+                            table += "<tr id='" + obj[x].number +"'><td>" + obj[x].timestamp + "</td><td>" + obj[x].number + "</td> <td>" + obj[x].notes + "</td><td><button name='" + obj[x].number + "'class='confirmButton' id='item" + obj[x].name + "'>Order Complete</button></td></tr>";
+                        }
+                    table += "</table>";
+                    document.getElementById("OrderTable").innerHTML = table;
+                    confirmOrder();
+            }
+        }
+        http.open('GET', '/employee', true);
+        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        timeout = setTimeout(orders, 2000);
+        http.send();
+    }
+
+
+    function confirmOrder(){
+        var clicked = document.getElementsByClassName('confirmButton');
+            for(a in clicked){
+                if(clicked.hasOwnProperty(a)){
+                    clicked[a].addEventListener("click", function(){
+                        changeStatus(this.name)
+    })
+}
+            }
+        }
+
+
+    function changeStatus(number){
+
+            var http = new XMLHttpRequest();
+
+            http.onreadystatechange = function (){
+            if(http.readyState == 4 && http.status == 200){
+                document.getElementById(number).style.display = "none";
+            }
+        }
+        http.open('POST', '/makeOrderComplete', true);
+        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        console.log(number);
+        http.send("number=" + number)
+    }
+
+
+
+
+
+
+    </script>
+    <h1>BASIC COFFEE SHOP</h1>
+    <h2>Welcome Employee!</h2>
+
+    <a href="/MenuPage"><button class="modifyMenu">Modify Menu</button></a>
+
+    <h3>Pending Orders</h3>
+
+    <p id="OrderTable"></p>
+    
+
+
+    <script type="text/javascript">
+    orders();
+    </script>
+
+</body>
+</html>

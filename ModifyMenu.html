@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ChangeMenu</title>
+        <style>
+            body {display: flex; flex-direction: column; justify-content: center; align-items: center;}
+            #menuTable th{text-align: left;}
+            #ps {text-align: center;}
+            #back { padding-top: 10px;}
+
+        </style>
+    </head>
+    <body>
+
+
+        <script type="text/javascript">
+
+        function getMenu(){
+            var http = new XMLHttpRequest();
+            http.onreadystatechange = function () {
+                if(http.readyState == 4 && http.status == 200){
+                    var obj = JSON.parse(this.response);
+                    var table = "<table id= 'menuTable' style='width:700px'><tr><th>productID</th><th>Item</th><th>Size</th><th>Price</th></tr>";
+                    for (x in obj) {
+                        table += "<tr id='" + obj[x].itemID +"'><td id='product" + obj[x].itemID + "'>" + obj[x].itemID + 
+                            "</td><td id='item" + obj[x].itemID + "'>" + obj[x].item + "</td> <td id='size" + obj[x].itemID + "'>" + obj[x].size +
+                                 "</td> <td id='price" + obj[x].itemID + "'>" + obj[x].price +"</td></tr>";
+                    }
+                    table += "</table>";
+                    document.getElementById("actualMenu").innerHTML = table;
+
+                }
+            }
+            http.open('GET', '/customer', true);
+            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            timeout = setTimeout(getMenu, 1000);
+            http.send();
+        }
+
+
+        function addToMenu(){
+            var http = new XMLHttpRequest();
+            http.onreadystatechange = function () {
+                if(http.readyState == 4){
+                    if(http.status == 200){
+                document.getElementById("addItemID").value = "";
+                document.getElementById("addItem").value = "";
+                document.getElementById("addSize").value = "";
+                document.getElementById("addPrice").value = ""
+                    }
+                    else{
+                        alert("Not successfully added: Please check input");
+                    }
+                }
+            }
+            http.open('POST', '/makeAddition', true);
+            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                var id = document.getElementById("addItemID").value;
+                var item = document.getElementById("addItem").value;
+                var size = document.getElementById("addSize").value;
+                var price = document.getElementById("addPrice").value;
+                var param = "itemID="+id + "&&item=" + item + "&&size=" + size + "&&price=" +price;
+            http.send(param);
+        }
+
+
+        function modMenu(){
+            var http = new XMLHttpRequest();
+            http.onreadystatechange = function () {
+                if(http.readyState == 4){
+                    if(http.status == 200){
+                document.getElementById("modItemID").value = "";
+                document.getElementById("modItem").value = "";
+                document.getElementById("modSize").value = "";
+                document.getElementById("modPrice").value = ""
+                    }
+                    else{
+                        alert("Not successfully modified: Please check input");
+                    }
+                }
+            }
+            http.open('POST', '/makeModification', true);
+            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                var id = document.getElementById("modItemID").value;
+                var item = document.getElementById("modItem").value;
+                var size = document.getElementById("modSize").value;
+                var price = document.getElementById("modPrice").value;
+                var param = "itemID="+id + "&&item=" + item + "&&size=" + size + "&&price=" +price;
+            http.send(param);
+        }
+
+
+
+        function delMenu(){
+            var http = new XMLHttpRequest();
+            http.onreadystatechange = function () {
+                if(http.readyState == 4){
+                    if(http.status == 200){
+                        document.getElementById("delItemID").value ="";
+                    }
+                    else{
+                        alert("Not successfully deleted: Please check input");
+                    }
+                }
+            }
+            http.open('POST', '/makeDeletion', true);
+            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                var id = document.getElementById("delItemID").value;
+                var param = "itemID="+id;
+            http.send(param);
+        }
+        
+        </script>
+
+
+
+
+
+        <h1>BASIC COFFEE SHOP</h1>
+        <h2>Modifying Menu...</h2>
+
+
+        <p id="actualMenu"></p>
+
+        <p id="ps"><b>Please note:</b> cannot duplicate productID,<br>
+            Size can only take values: small, medium, large or left empty.</p>    
+
+        <button id="Add">Add Item to Menu</button>
+        <button id="Mod">Modify Item</button>
+        <button id="Del">Remove Item</button>
+
+
+
+        <div id="AddContainer" style="display: none;">
+        <table id= 'inputTable1'> <tr><th>productID*</th><th>Item*</th><th>Size</th><th>Price*</th></tr>
+        <tr class='addRow'><td><input id='addItemID'></input></td><td><input id='addItem'></input></td><td><input id='addSize'></input></td> <td><input id='addPrice'></input></td></tr></table>
+        <button class='AddButton' id='addButn'>Make Addition</button>
+        </div>
+
+        <div id="ModifyContainer" style="display: none;">
+            <table id= 'inputTable2'> <tr><th>productID*</th><th>Item</th><th>Size</th><th>Price</th></tr>
+            <tr class='ModifyRow'><td><input id='modItemID'></input></td><td><input id='modItem'></input></td><td><input id='modSize'></input></td> <td><input id='modPrice'></input></td></tr></table>
+            <button class='AddButton' id='modButn'>Make Modification</button>
+            </div>
+        <div id="deleteContainer" style="display: none;">
+                <table id= 'inputTable3'> <tr><th>productID</th></tr>
+                <tr class='DeleteRow'><td><input id='delItemID'></input></td></tr></table>
+                <button class='AddButton' id='delButn'>Make Deletion</button>
+                </div>
+        <!-- <input id="addInput"> -->
+        <a id="back" href="/management"><button>Back to Orders</button></a>
+
+
+        
+        <script type="text/javascript">
+        getMenu();
+
+        var counter1 = 0;
+        document.getElementById("Add").addEventListener("click", function (){
+            counter1 += 1;
+            document.getElementById("Add").style.backgroundColor = "grey";
+            document.getElementById("AddContainer").style.display = "unset";
+            document.getElementById("addButn").addEventListener("click", function(){
+                var id = document.getElementById("addItemID").value;
+                var item = document.getElementById("addItem").value;
+                var size = document.getElementById("addSize").value;
+                var price = document.getElementById("addPrice").value;
+
+                console.log(id)
+                console.log(item)
+                console.log(size)
+                if(id == "" || item == "" || price == ""){
+                    alert("Please input the item Id, item and price");
+                }
+                else{
+                    addToMenu();
+                }
+            })
+            
+        if(counter1 == 2){
+            document.getElementById("Add").style.backgroundColor = "unset";
+            document.getElementById("AddContainer").style.display = "none";
+            counter1 = 0;
+        }
+
+        })
+
+
+
+
+        var counter2 = 0;
+        document.getElementById("Mod").addEventListener("click", function (){
+            counter2 +=1;
+            document.getElementById("Mod").style.backgroundColor = "grey";
+            document.getElementById("ModifyContainer").style.display = "unset";
+            
+
+            document.getElementById("modItemID").addEventListener("input", function (){
+                console.log(event.target.value);
+                var rows = document.getElementsByTagName("tr");
+                var i;
+                for(i =0; i< rows.length; i++){
+                    var elementId = rows[i].id;
+                    if(elementId == event.target.value){
+                        console.log(document.getElementById("product" + elementId).innerText);
+                        document.getElementById("modItem").value = document.getElementById("item" + elementId).innerText;
+                        document.getElementById("modSize").value = document.getElementById("size" + elementId).innerText;
+                        document.getElementById("modPrice").value = document.getElementById("price" + elementId).innerText;
+                    }
+                }
+
+            })
+            document.getElementById("modButn").addEventListener("click", function(){
+                var id = document.getElementById("modItemID").value;
+                var item = document.getElementById("modItem").value;
+                var size = document.getElementById("modSize").value;
+                var price = document.getElementById("modPrice").value;
+
+                console.log(id)
+                console.log(item)
+                console.log(size)
+                if(id == "" || item == "" || price == ""){
+                    alert("Please input the item Id, item and price");
+                }
+                else{
+                    modMenu();
+                }
+            })
+            if(counter2 == 2){
+            document.getElementById("Mod").style.backgroundColor = "unset";
+            document.getElementById("ModifyContainer").style.display = "none";
+            counter2 = 0;
+        }
+
+        })
+
+
+        counter3 = 0;
+        document.getElementById("Del").addEventListener("click", function (){
+            counter3 +=1;
+            document.getElementById("Del").style.backgroundColor = "grey";
+            document.getElementById("deleteContainer").style.display = "unset";
+            document.getElementById("delButn").addEventListener("click", function(){
+                var id = document.getElementById("delItemID").value;
+
+                console.log(id)
+                if(id == "" || id.length > 4){
+                    alert("Please input the correct Item ID");
+                }
+                else{
+                    delMenu();
+                }
+            })
+            if(counter3 == 2){
+            document.getElementById("Del").style.backgroundColor = "unset";
+            document.getElementById("deleteContainer").style.display = "none";
+            counter3 = 0;
+            }
+
+        })
+        
+        </script>
+
+
+    </body>
+</html>

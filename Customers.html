@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CustomerPage</title>
+        <style>
+            body {display: flex; flex-direction: column; justify-content: center; align-items: center;}
+            .orderDets, .orderInfo {display: flex; flex-direction: row; width: 400px; justify-content: space-between; padding-top: 10px;}
+            .AddButton{height:30px; border: none;}
+            #menuTable th{text-align: left;}
+            #submit, #cancel {width: 100px; height: 50px; background-color: rgb(206, 206, 206); border: none;}
+            #status {font-size: 30px;}
+            #num, #total{font-size: 20px;}
+            
+        </style>
+
+    </head>
+
+
+
+
+
+
+    <body>
+        <h1>BASIC COFFEE SHOP</h1>
+        <h2>Welcome Customer!</h2>
+
+
+
+
+
+
+        <script type='text/javascript'>
+        
+        function menu () {
+
+            var http = new XMLHttpRequest();
+
+
+            http.onreadystatechange = function () {
+                if(http.readyState == 4 && http.status == 200){
+                    var obj = JSON.parse(this.response);
+                    var table = "<table id='menuTable' style='width:500px'> <tr><th>Item</th><th>Size</th><th>Price</th><th></th></tr>";
+                    var prevx = null;
+                    const cost = 0;
+                    for (x in obj) {
+                        if(obj[x].item == prevx){
+                            table += "<tr id='" + obj[x].itemID +"'><td style='visibility: hidden'>" + obj[x].item + "</td> <td>" + obj[x].size + "</td> <td id='price"+ obj[x].itemID + "'>" + obj[x].price +"</td><td><button name='" + obj[x].itemID + "' class='AddButton' id='item" + obj[x].itemID + "'>Add to Order</button></td></tr>";
+                        }
+                        else{
+                            table += "<tr id='" + obj[x].itemID +"'><td>" + obj[x].item + "</td> <td>" + obj[x].size + "</td> <td id='price"+ obj[x].itemID + "'>" + obj[x].price +"</td><td><button name='" + obj[x].itemID + "'class='AddButton' id='item" + obj[x].itemID + "'>Add to Order</button></td></tr>";
+                        }
+                        prevx = obj[x].item;
+                    }
+
+                    table += "</table>";
+                    document.getElementById("table").innerHTML = table;
+                    addClick();
+
+                }
+            }
+            http.open('GET', '/customer', true);
+            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            http.send();
+        }
+
+
+
+        var object1; 
+
+        function Submition(){
+            var xhtml = new XMLHttpRequest();
+
+            xhtml.onreadystatechange = function (){
+                if(xhtml.readyState == 4 && xhtml.status== 200){
+                    object1 = this.response;
+                Confirmation();
+                }
+            }
+            xhtml.open('POST', '/submit', true);
+            xhtml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            var info = "";
+            var doc = document.getElementsByClassName("orderInfo");
+            var x;
+            for(i = 0; i < doc.length; i++){
+                var line = doc[i].getElementsByTagName("label")
+                for(x = 0; x < line.length; x++){
+                        var random = line[x].innerText + " ";
+                        info += random;
+            }
+            info += ",\n";
+        }
+        xhtml.send('info='+ info);
+    }
+
+
+
+
+    function cancelOrder(){
+
+            var http = new XMLHttpRequest();
+
+            http.onreadystatechange = function (){
+            if(http.readyState == 4 && http.status == 200){
+                document.getElementById("status").innerText = "Canceled";
+                console.log("canceled")
+                clearTimeout(timeout);
+            }
+            }
+            http.open('POST', '/cancelOrder', true);
+            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            http.send("number=" + object1);
+            }
+
+
+
+
+
+    function Confirmation(){
+
+            var Xhhtp = new XMLHttpRequest();
+
+            Xhhtp.onreadystatechange = function() {
+
+                if(Xhhtp.readyState == 4 && Xhhtp.status== 200){
+                    var object = JSON.parse(this.response);
+                    if(object[0].status == 0){
+                        var bool = "In Progress";
+                        var del = document.getElementsByClassName("delete");
+                        for (i = 0; i < del.length; i++) {
+                            del[i].style.display = "none";
+                            }
+
+                        var delAdd = document.getElementsByClassName("AddButton");
+                        for (i = 0; i < delAdd.length; i++) {
+                            delAdd[i].style.display = "none";
+                            }
+
+                        var delPlus = document.getElementsByClassName("increment");
+                        for (i = 0; i < delPlus.length; i++) {
+                            delPlus[i].style.display = "none";
+                            }
+
+                        var delMinus = document.getElementsByClassName("decrement");
+                        for (i = 0; i < delMinus.length; i++) {
+                            delMinus[i].style.display = "none";
+                            }
+
+
+                        document.getElementById("submit").style.display = "none";
+                        document.getElementById("thanks").innerText = "Thank you! Your order has been submitted";
+                        document.getElementById("cancel").style.display = "unset";
+
+                    }else{
+                        var bool = "Complete!";
+                        document.getElementById("thanks").innerText = "Thank you! Your order is Complete";
+                        document.getElementById("cancel").style.display = "none";
+                    }
+                    document.getElementById("num").innerText = object1;
+                    document.getElementById("status").innerText = bool;                    
+                }
+            }
+            Xhhtp.open('POST', '/orderStatus', true);
+            Xhhtp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            timeout = setTimeout(Confirmation, 2000);
+            Xhhtp.send("statusID=" + object1);
+        }
+        </script>
+
+
+
+
+
+
+
+
+
+        <p id="table"></p>
+        <label><b>Your Order:</b></label><br>
+        <p id="Order"></p>
+        
+        <label id="totalPrice"><b>Total:</b></label>
+        <label id="total">0</label><br>
+        <button id="submit">Submit Order</button><br>
+        <h3 id="thanks"></h3>
+        <label id="OrderNum"><b>Order Number:   </b></label>
+        <Label id="num"></Label><br>
+        <label id="Orderstatus"><b>Order Status:   </b></label>
+        <Label id="status"></Label>
+        <button id="cancel" style="display: none;">Cancel Order</button><br><br>
+        <button onClick="window.location.reload();">Start Another Order</button>
+
+
+
+
+
+
+
+
+
+
+
+        <script type="text/javascript">
+        menu();
+
+        function addClick(){
+            var i;
+            var clicked = document.getElementsByClassName('AddButton');
+            var itembuttons = [];
+            for(a in clicked){
+                if(clicked.hasOwnProperty(a)){
+                    var rowId = clicked[a].id;
+                    clicked[a].addEventListener("click", function(){
+                        var rows = document.getElementById(this.name);
+                        var value = rows.getElementsByTagName("td");
+                        var orderString = "";
+                        if(itembuttons.includes(this.name)){
+                            let num = document.getElementById("quantity"+this.name).innerHTML;
+                            let num0 = document.getElementById("cost"+this.name).innerHTML;
+                            let total0 = Number(num) + 1;
+                            let total2 = Number(num0) + Number(value[2].textContent);
+                            document.getElementById("quantity"+this.name).innerHTML = total0;
+                            document.getElementById("cost"+this.name).innerHTML = total2;
+                        }
+                        else{
+                        orderString = "<div class='orderInfo'id='I" + this.name + "'><label id='quantity" + this.name + "'>1</label><label>          "+ value[0].textContent + "</label>" + 
+                            "<label>         "+ value[1].textContent + "           </label>" + "<label id='cost" + this.name + "'>"+ value[2].textContent 
+                                + "         </label><button class='increment' name='A" + this.name + "'>+</button><button class='decrement' name='D" + this.name + "'>-</button><button class='delete' name='I" + this.name + "'>Delete</button><br</div>" ;
+                        document.getElementById("Order").innerHTML += orderString;
+                        itembuttons.push(this.name);
+                        var buttons = "<button class='decrement' name='D" + this.name + "'>+</button>";
+                        addOrder(itembuttons);
+                        subtractOrder(itembuttons);
+                        deleteOrder(itembuttons);
+                        }
+                        let num1 = document.getElementById("total").innerHTML;
+                        let num2 = parseInt(value[2].textContent);
+                        let total = Number(num1) + Number(num2);
+                        document.getElementById("total").innerHTML= total;
+                    })
+                }
+            }
+        }
+
+
+        function deleteOrder(itembuttons){
+            var deleted = document.getElementsByClassName("delete");
+            for(b in deleted){
+                if(deleted.hasOwnProperty(b)){
+                    deleted[b].addEventListener("click", function(){
+                        var i;
+                        for(i = 0; i < itembuttons.length; i++){
+                            let nam = "I" + itembuttons[i]; 
+                            if( nam == this.name){
+                                let costIdentity = "cost" + itembuttons[i];
+                                let num3 = document.getElementById("total").innerHTML;
+                                let num4 = document.getElementById(costIdentity).innerHTML;
+                                let total2 = Number(num3) - Number(num4);
+                                document.getElementById("total").innerHTML= total2;
+                                itembuttons.splice(i, 1);
+                            }
+                        }
+                        var objt = document.getElementById(this.name);
+                        objt.remove();
+                    })
+                }
+        }
+    }
+
+
+    function addOrder(itembuttons){
+        var incremented = document.getElementsByClassName("increment");
+        for(a in incremented){
+            if(incremented.hasOwnProperty(a)){
+                incremented[a].addEventListener("click", function(){
+                    var i;
+                    for(i = 0; i < itembuttons.length; i++){
+                        let nam = "A" + itembuttons[i];
+                        if(nam == this.name){
+                            let numQ = document.getElementById("quantity"+ itembuttons[i]).innerHTML;
+                            let numC = document.getElementById("cost"+ itembuttons[i]).innerHTML;
+                            let numP = document.getElementById("price" + itembuttons[i]).innerHTML;
+                            let numT = document.getElementById("total").innerHTML;
+                            let totalQ = Number(numQ) + 1;
+                            let totalC = Number(numC) + Number(numP);
+                            let totalP = Number(numT) + Number(numP);
+                            document.getElementById("quantity"+ itembuttons[i]).innerHTML = totalQ;
+                            document.getElementById("cost"+ itembuttons[i]).innerHTML = totalC;
+                            document.getElementById("total").innerHTML = totalP;
+                        }
+                }
+            })
+
+        }
+    }
+};
+
+
+function subtractOrder(itembuttons){
+        var incremented = document.getElementsByClassName("decrement");
+        for(a in incremented){
+            if(incremented.hasOwnProperty(a)){
+                incremented[a].addEventListener("click", function(){
+                    var i;
+                    for(i = 0; i < itembuttons.length; i++){
+                        let nam = "D" + itembuttons[i];
+                        if(nam == this.name){
+                            let numQ = document.getElementById("quantity"+ itembuttons[i]).innerHTML;
+                            let numC = document.getElementById("cost"+ itembuttons[i]).innerHTML;
+                            let numP = document.getElementById("price" + itembuttons[i]).innerHTML;
+                            let numT = document.getElementById("total").innerHTML;
+                            let totalQ = Number(numQ) - 1;
+                            let totalC = Number(numC) - Number(numP);
+                            let totalP = Number(numT) - Number(numP);
+                            if(totalQ != 0){
+                                document.getElementById("quantity"+ itembuttons[i]).innerHTML = totalQ;
+                                document.getElementById("cost"+ itembuttons[i]).innerHTML = totalC;
+                                document.getElementById("total").innerHTML = totalP;
+                            }
+                            
+                        }
+                }
+            })
+
+        }
+    }
+};
+
+
+    document.getElementById("submit").addEventListener("click", Submition);
+    document.getElementById("cancel").addEventListener("click", cancelOrder);
+
+        </script>
+
+    </body>
+
+</html>
